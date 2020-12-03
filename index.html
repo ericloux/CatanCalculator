@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Can I Build A Road In Catan?</title>
+    <title>Catan Yields</title>
 </head>
 <body>
 
@@ -16,7 +16,7 @@
 	<tr><td>Blue</td><td>1.5% to 2.5%</td><td>6-8</td></tr>
 	<tr><td>Green</td><td>2.5% or more</td><td>9+</td></tr></table><br><br>
 
-	In short, green and blue are where you most likely want to place initial settlements, whereas red spaces are where you might want to place them if you're my buddy Chris and you "have a strategy you want to try out". (He lost that game, if there was any doubt.)<br><br>
+	In short, green and blue are where you most likely want to place initial settlements, whereas red spaces are where you might want to place them if you're my buddy Chris and you "have a strategy you want to try out".<br><br>
 
 	The table is pre-loaded with the sample beginner's game found in the player's rulebook.<br><br>
 	
@@ -112,6 +112,7 @@
 	
 		ctx.strokeStyle = "#000000"
 		ctx.fillStyle = color
+		ctx.font = "20px Arial"
 		
 		ctx.fillRect(START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)-(TBOX_WIDTH/2), TBOX_WIDTH, TBOX_WIDTH)
 		
@@ -123,7 +124,8 @@
 		ctx.lineTo(START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)-(TBOX_WIDTH/2))
 		ctx.stroke()
 		
-		ctx.strokeText(value, START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/4), START_Y + (y_index*HEX_HEIGHT/4))
+		ctx.fillStyle = "#000000"
+		ctx.fillText(value, START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/4), START_Y + (y_index*HEX_HEIGHT/4)+(TBOX_WIDTH/6))
 	}
 	
 	function calculateHexes() {
@@ -177,7 +179,7 @@
 	function valueToColor(value) {
 		if (value < 3) return "#FF0000"
 		if (value < 6) return "#FFFF00"
-		if (value < 9) return "#0000FF"
+		if (value < 9) return "cyan"
 		return "#00FF00"
 	
 		let color = "#"
