@@ -1,217 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Catan Yields</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Catan Yields</title>
 </head>
+
 <body>
 
 	Welcome to the Catan Resource Generation Calculator!<br><br>
-	To use this calculator, simply enter the number on each of the circular pips on the game board. (Enter a 0 for the desert.) The page will calculate the relative strengths of each potential settlement position on the board. Positions are also color-coded as follows:
-	<br><br><table display="inline"><tr><th>Color</th><th>% Chance</th><th>Draws (out of 36 rolls)</th></tr>
-	<tr><td>Red</td><td>Less than 0.75%</td><td>1-2</td></tr>
-	<tr><td>Yellow</td><td>0.75% to 1.5%</td><td>3-5</td></tr>
-	<tr><td>Blue</td><td>1.5% to 2.5%</td><td>6-8</td></tr>
-	<tr><td>Green</td><td>2.5% or more</td><td>9+</td></tr></table><br><br>
+	To use this calculator, simply enter the number on each of the circular pips on the game board. (Enter a 0 for the
+	desert.) The page will calculate the relative strengths of each potential settlement position on the board.
+	Positions are also color-coded as follows:
+	<br><br>
+	<table display="inline">
+		<tr>
+			<th>Color</th>
+			<th>% Chance</th>
+			<th>Draws (out of 36 rolls)</th>
+		</tr>
+		<tr>
+			<td>Red</td>
+			<td>Less than 0.75%</td>
+			<td>1-2</td>
+		</tr>
+		<tr>
+			<td>Yellow</td>
+			<td>0.75% to 1.5%</td>
+			<td>3-5</td>
+		</tr>
+		<tr>
+			<td>Blue</td>
+			<td>1.5% to 2.5%</td>
+			<td>6-8</td>
+		</tr>
+		<tr>
+			<td>Green</td>
+			<td>2.5% or more</td>
+			<td>9+</td>
+		</tr>
+	</table><br><br>
 
-	In short, green and blue are where you most likely want to place initial settlements, whereas red spaces are where you might want to place them if you're my buddy Chris and you "have a strategy you want to try out".<br><br>
+	In short, green and blue are where you most likely want to place initial settlements, whereas red spaces are where
+	you might want to place them if you're my buddy Chris and you "have a strategy you want to try out".<br><br>
 
 	The table is pre-loaded with the sample beginner's game found in the player's rulebook.<br><br>
-	
+
 	Enter your numbers here using their relative positions on the board then press the "Calculate" button: <br><br>
 
 	<div id="input"> </div>
 	<br>
 	<canvas id="gameBoard" width="560" height="520"></canvas>
-	
-    <script>
-	var ctx = document.getElementById("gameBoard").getContext("2d");
-	
-	const HEX_HEIGHT = 120
-	let HEX_WIDTH = HEX_HEIGHT * Math.sqrt(3) / 2
-	
-	const START_X = 20
-	const START_Y = 20
-	
-	let tileCenters = new Array(19)
-	let tileValues = new Array(11)
-	
-	let tileDefaults = [10, 2, 9, 12, 6, 4, 10, 9, 11, 0, 3, 8, 8, 3, 4, 5, 5, 6, 11]
-	
-	for (let i = 0; i < 11; i++) {
-		tileValues[i] = new Array(17)
-	}
-	
-	function drawHexInput(index, margin) {
-		let content = `<input id="hex` + index + `" onclick="this.setSelectionRange(0, this.value.length)" value="` + tileDefaults[index] + `" style="width:20px; margin-left:` + margin*10 + `px">`;
-		
-		return content
-	}
-	
-	function initializePage() {
-	
-		for (let i = 0; i < 11; i++) {
-			for (let j = 0; j < 17; j++) {
-				tileValues[i][j] = 0
-			}
-		}
-	
-		drawHexes()
-		
-		let pageContent = ``;
-		let count = 0
-		
-		for (let i=0; i<5; i++) {
-			pageContent += drawHexInput(count, Math.abs(2-i)+.2)
-			tileCenters[count] = [Math.abs(2-i)+1, 3*i+2]
-			count++
-			
-			for (let j=0; j<4-Math.abs(2-i); j++) {
-				pageContent += drawHexInput(count,0)
-				tileCenters[count] = [Math.abs(2-i)+(2*(j+1))+1, 3*i+2]
-				count++;
-			}
-			pageContent += "<br>"
-		}
-		
-		pageContent += `<br><button onClick="calculateHexes()">Calculate</button>`
-		
-		document.getElementById("input").innerHTML = pageContent
-	}
-	
-	function clearCanvas() {
-		ctx.fillStyle = "#FFFFFF"
-		ctx.fillRect(0,0,920, 800)
-	}
-	
-	function drawHexes() {
-		for (let i=0; i<5; i++) {
-			for (let j=0; j<5-Math.abs(2-i); j++) {
-				drawHex(START_X+(Math.abs(2-i)*HEX_WIDTH/2)+(j*HEX_WIDTH), START_Y+(i*HEX_HEIGHT*3/4))
-			}
-		}	
-	}
-	
-	function drawHex(x, y) { 
-		ctx.strokeStyle = "#0000FF"
-		ctx.beginPath()
-		ctx.moveTo(x+(HEX_WIDTH/2), y)
-		ctx.lineTo(x+(HEX_WIDTH), y+(HEX_HEIGHT/4))
-		ctx.lineTo(x+(HEX_WIDTH), y+(HEX_HEIGHT*3/4))
-		ctx.lineTo(x+(HEX_WIDTH/2), y+(HEX_HEIGHT))
-		ctx.lineTo(x, y+(HEX_HEIGHT*3/4))
-		ctx.lineTo(x, y+(HEX_HEIGHT/4))
-		ctx.lineTo(x+(HEX_WIDTH/2), y)
-		ctx.stroke() 
-	}
-	
-	function drawLabel(x_index, y_index, value, color) {
+
+	<script>
+		var ctx = document.getElementById("gameBoard").getContext("2d");
+
+		const HEX_HEIGHT = 120
 		const TBOX_WIDTH = 30
-	
-		ctx.strokeStyle = "#000000"
-		ctx.fillStyle = color
-		ctx.font = "20px Arial"
-		
-		ctx.fillRect(START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)-(TBOX_WIDTH/2), TBOX_WIDTH, TBOX_WIDTH)
-		
-		ctx.beginPath()
-		ctx.moveTo(START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)-(TBOX_WIDTH/2))
-		ctx.lineTo(START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)+(TBOX_WIDTH/2))
-		ctx.lineTo(START_X + (x_index*HEX_WIDTH/2)+(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)+(TBOX_WIDTH/2))
-		ctx.lineTo(START_X + (x_index*HEX_WIDTH/2)+(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)-(TBOX_WIDTH/2))
-		ctx.lineTo(START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/2), START_Y + (y_index*HEX_HEIGHT/4)-(TBOX_WIDTH/2))
-		ctx.stroke()
-		
-		ctx.fillStyle = "#000000"
-		ctx.fillText(value, START_X + (x_index*HEX_WIDTH/2)-(TBOX_WIDTH/4), START_Y + (y_index*HEX_HEIGHT/4)+(TBOX_WIDTH/6))
-	}
-	
-	function calculateHexes() {
-		clearCanvas()
-		drawHexes()
-		
-		for (let i = 0; i < 19; i++) {
-			let x = tileCenters[i][0]
-			let y = tileCenters[i][1]
-			let value = parseInt(document.getElementById("hex" + i).value)
-			
-			if (value != 0) {	
-				tileValues[x][y] = value
-				
-				value = numbersToDots(value)
-				
-				tileValues[x-1][y-1] += value
-				tileValues[x-1][y+1] += value
-				tileValues[x+1][y-1] += value
-				tileValues[x+1][y+1] += value
-				tileValues[x][y-2] += value
-				tileValues[x][y+2] += value
-			}
-		}
-		
+		let HEX_WIDTH = HEX_HEIGHT * Math.sqrt(3) / 2
+
+		const START_X = 20
+		const START_Y = 20
+
+		let tileCenters = new Array(19)
+		let tileValues = new Array(11)
+		let tileValuesCoords = new Array(11)
+		let tileValuesColorState = new Array(11)
+
+		let tileDefaults = [10, 2, 9, 12, 6, 4, 10, 9, 11, 0, 3, 8, 8, 3, 4, 5, 5, 6, 11]
+
 		for (let i = 0; i < 11; i++) {
-			for (let j = 0; j < 17; j++) {
-				let circleArea = false
-				for (let k = 0; k < 19; k++) {
-					if (tileCenters[k][0] == i && tileCenters[k][1] == j) {
-						k = 20
-						circleArea = true
-					}
+			tileValues[i] = new Array(17)
+			tileValuesCoords[i] = new Array(17)
+			tileValuesColorState[i] = new Array(17)
+		}
+
+		function drawHexInput(index, margin) {
+			let content = `<input id="hex` + index + `" onclick="this.setSelectionRange(0, this.value.length)" value="` + tileDefaults[index] + `" style="width:20px; margin-left:` + margin * 10 + `px">`;
+
+			return content
+		}
+
+		function initializePage() {
+
+			for (let i = 0; i < 11; i++) {
+				for (let j = 0; j < 17; j++) {
+					tileValues[i][j] = 0
+					tileValuesCoords[i][j] = 0
 				}
-				if (circleArea == false) {
-					if (tileValues[i][j] != 0) {
-						drawLabel(i, j, tileValues[i][j], valueToColor(tileValues[i][j]))
-						tileValues[i][j] = 0
-					}
+			}
+
+			drawHexes()
+
+			let pageContent = ``;
+			let count = 0
+
+			for (let i = 0; i < 5; i++) {
+				pageContent += drawHexInput(count, Math.abs(2 - i) + .2)
+				tileCenters[count] = [Math.abs(2 - i) + 1, 3 * i + 2]
+				count++
+
+				for (let j = 0; j < 4 - Math.abs(2 - i); j++) {
+					pageContent += drawHexInput(count, 0)
+					tileCenters[count] = [Math.abs(2 - i) + (2 * (j + 1)) + 1, 3 * i + 2]
+					count++;
+				}
+				pageContent += "<br>"
+			}
+
+			pageContent += `<br><button onClick="calculateHexes()">Calculate</button>`
+
+			document.getElementById("input").innerHTML = pageContent
+		}
+
+		function clearCanvas() {
+			ctx.fillStyle = "#FFFFFF"
+			ctx.fillRect(0, 0, 920, 800)
+			for (let i = 0; i < 11; i++) {
+				for (let j = 0; j < 17; j++) {
+					tileValues[i][j] = 0
+					tileValuesCoords[i][j] = 0
 				}
 			}
 		}
-		
-		for (let i = 0; i < 19; i++) {
-			let x = tileCenters[i][0]
-			let y = tileCenters[i][1]
-			drawLabel(x, y, tileValues[x][y], "#FFFFFF")
-		}	
-	}
-	
-	function valueToColor(value) {
-		if (value < 3) return "#FF0000"
-		if (value < 6) return "#FFFF00"
-		if (value < 9) return "cyan"
-		return "#00FF00"
-	
-		let color = "#"
-		
-		let colorValue = 255-(32*value)
-		if (colorValue  < 0) colorValue = 0
-		color += colorValue .toString(16)
-		if (colorValue < 16) color += "0"
-		
-		colorValue = 32*value-255
-		if (colorValue < 0) colorValue  = 0
-		color += colorValue .toString(16)
-		if (colorValue < 16) color += "0"
-		
-		colorValue = 255 - Math.abs(255-(32*value))
-		color += colorValue .toString(16)
-		if (colorValue < 16) color += "0"
-		
-		console.log(value, color)
-		
-		return color
-	}
-	
-	function numbersToDots(value) {
-		return 6-Math.abs(value-7)
-	}
-	
-	initializePage()
-	
-//	<input id="wood" value="0" onclick="this.setSelectionRange(0, this.value.length)">
-	
-    </script>
+
+		function drawHexes() {
+			for (let i = 0; i < 5; i++) {
+				for (let j = 0; j < 5 - Math.abs(2 - i); j++) {
+					drawHex(START_X + (Math.abs(2 - i) * HEX_WIDTH / 2) + (j * HEX_WIDTH), START_Y + (i * HEX_HEIGHT * 3 / 4))
+				}
+			}
+		}
+
+		function drawHex(x, y) {
+			ctx.strokeStyle = "#0000FF"
+			ctx.beginPath()
+			ctx.moveTo(x + (HEX_WIDTH / 2), y)
+			ctx.lineTo(x + (HEX_WIDTH), y + (HEX_HEIGHT / 4))
+			ctx.lineTo(x + (HEX_WIDTH), y + (HEX_HEIGHT * 3 / 4))
+			ctx.lineTo(x + (HEX_WIDTH / 2), y + (HEX_HEIGHT))
+			ctx.lineTo(x, y + (HEX_HEIGHT * 3 / 4))
+			ctx.lineTo(x, y + (HEX_HEIGHT / 4))
+			ctx.lineTo(x + (HEX_WIDTH / 2), y)
+			ctx.stroke()
+		}
+
+		function drawLabel(x_index, y_index, value, color) {
+
+			ctx.strokeStyle = "#000000"
+			ctx.fillStyle = color
+			ctx.font = "20px Arial"
+
+			ctx.fillRect(START_X + (x_index * HEX_WIDTH / 2) - (TBOX_WIDTH / 2), START_Y + (y_index * HEX_HEIGHT / 4) - (TBOX_WIDTH / 2), TBOX_WIDTH, TBOX_WIDTH)
+
+			ctx.beginPath()
+			ctx.moveTo(START_X + (x_index * HEX_WIDTH / 2) - (TBOX_WIDTH / 2), START_Y + (y_index * HEX_HEIGHT / 4) - (TBOX_WIDTH / 2))
+			ctx.lineTo(START_X + (x_index * HEX_WIDTH / 2) - (TBOX_WIDTH / 2), START_Y + (y_index * HEX_HEIGHT / 4) + (TBOX_WIDTH / 2))
+			ctx.lineTo(START_X + (x_index * HEX_WIDTH / 2) + (TBOX_WIDTH / 2), START_Y + (y_index * HEX_HEIGHT / 4) + (TBOX_WIDTH / 2))
+			ctx.lineTo(START_X + (x_index * HEX_WIDTH / 2) + (TBOX_WIDTH / 2), START_Y + (y_index * HEX_HEIGHT / 4) - (TBOX_WIDTH / 2))
+			ctx.lineTo(START_X + (x_index * HEX_WIDTH / 2) - (TBOX_WIDTH / 2), START_Y + (y_index * HEX_HEIGHT / 4) - (TBOX_WIDTH / 2))
+			ctx.stroke()
+
+			ctx.fillStyle = "#000000"
+			ctx.fillText(value, START_X + (x_index * HEX_WIDTH / 2) - (TBOX_WIDTH / 4), START_Y + (y_index * HEX_HEIGHT / 4) + (TBOX_WIDTH / 6))
+		}
+
+		function calculateHexes() {
+			clearCanvas()
+			drawHexes()
+
+			for (let i = 0; i < 19; i++) {
+				let x = tileCenters[i][0]
+				let y = tileCenters[i][1]
+				let value = parseInt(document.getElementById("hex" + i).value)
+
+				if (value != 0) {
+					tileValues[x][y] = value
+
+					value = numbersToDots(value)
+
+					tileValues[x - 1][y - 1] += value
+					tileValues[x - 1][y + 1] += value
+					tileValues[x + 1][y - 1] += value
+					tileValues[x + 1][y + 1] += value
+					tileValues[x][y - 2] += value
+					tileValues[x][y + 2] += value
+				}
+			}
+
+			for (let i = 0; i < 11; i++) {
+				for (let j = 0; j < 17; j++) {
+					let circleArea = false
+					for (let k = 0; k < 19; k++) {
+						if (tileCenters[k][0] == i && tileCenters[k][1] == j) {
+							k = 20
+							circleArea = true
+						}
+					}
+					if (circleArea == false) {
+						tileValuesCoords[i][j] = [START_X + (i * HEX_WIDTH / 2) - (TBOX_WIDTH / 2), START_Y + (j * HEX_HEIGHT / 4) - (TBOX_WIDTH / 2)]
+						if (tileValues[i][j] != 0) {
+							tileValuesColorState[i][j] = [valueToColor(tileValues[i][j]), 0]
+							drawLabel(i, j, tileValues[i][j], valueToColor(tileValues[i][j]))
+							console.log(i, j, tileValues[i][j], valueToColor(tileValues[i][j]))
+							//tileValues[i][j] = 0
+						}
+					}
+				}
+			}
+
+			for (let i = 0; i < 19; i++) {
+				let x = tileCenters[i][0]
+				let y = tileCenters[i][1]
+				drawLabel(x, y, tileValues[x][y], "#FFFFFF")
+			}
+
+			var canvas = document.getElementById("gameBoard");
+			function getCursorPosition(canvas, event) {
+				const rect = canvas.getBoundingClientRect()
+				let x = event.clientX - rect.left
+				let y = event.clientY - rect.top
+				console.log("x: " + x + " y: " + y)
+				start_x = tileValuesCoords[0][0][0]
+				start_y = tileValuesCoords[0][0][0]
+				end_x = tileValuesCoords[10][16][0] + TBOX_WIDTH
+				end_y = tileValuesCoords[10][16][1] + TBOX_WIDTH
+				board_width = end_x - start_x
+				board_height = end_y - start_y
+				x = x - start_x
+				y = y - start_y
+				i = Math.floor(x / (board_width / 11))
+				j = Math.floor(y / (board_height / 17))
+
+				console.log("i: " + Math.floor(x / (board_width / 11)))
+				console.log("j: " + Math.floor(y / (board_height / 17)))
+
+				change_state(i, j);
+			}
+
+			canvas.addEventListener('click', function (e) {
+				getCursorPosition(canvas, e)
+			})
+
+		}
+
+		function change_state(i, j) {
+			if (tileValuesColorState[i][j][1] == 0) {
+				tileValuesColorState[i][j][1] = 1
+				drawLabel(i, j, tileValues[i][j], "orange")
+				mark_unusable_neighbours(i, j)
+			}
+			else if (tileValuesColorState[i][j][1] == 1) {
+				tileValuesColorState[i][j][1] = 2
+				drawLabel(i, j, tileValues[i][j], "violet")
+				mark_unusable_neighbours(i, j)
+			}
+			else {
+				tileValuesColorState[i][j][1] = 0
+				drawLabel(i, j, tileValues[i][j], tileValuesColorState[i][j][0])
+				mark_usable_neighbours(i, j)
+			}
+		}
+
+		function mark_unusable(i, j) {
+			if (tileValuesColorState[i][j] != null) {
+				drawLabel(i, j, tileValues[i][j], "#000")
+				tileValuesColorState[i][j][1] = -1
+			}
+		}
+
+		function mark_usable(i, j) {
+			if (tileValuesColorState[i][j] != null) {
+				drawLabel(i, j, tileValues[i][j], tileValuesColorState[i][j][0])
+				tileValuesColorState[i][j][1] = 0
+			}
+		}
+
+		function mark_unusable_neighbours(i, j) {
+			if ((i % 2 == 0 && [0, 1].includes((j - 3) % 6)) || (i % 2 != 0 && [0, 1].includes(j % 6))) {
+				mark_unusable(i, j - 2)
+				mark_unusable(i - 1, j + 1)
+				mark_unusable(i + 1, j + 1)
+			} else {
+				mark_unusable(i - 1, j - 1)
+				mark_unusable(i + 1, j - 1)
+				mark_unusable(i, j + 2)
+			}
+		}
+
+		function mark_usable_neighbours(i, j) {
+			if ((i % 2 == 0 && [0, 1].includes((j - 3) % 6)) || (i % 2 != 0 && [0, 1].includes(j % 6))) {
+				mark_usable(i, j - 2)
+				mark_usable(i - 1, j + 1)
+				mark_usable(i + 1, j + 1)
+			} else {
+				mark_usable(i - 1, j - 1)
+				mark_usable(i + 1, j - 1)
+				mark_usable(i, j + 2)
+			}
+		}
+
+		function valueToColor(value) {
+			if (value < 3) return "#FF0000"
+			if (value < 6) return "#FFFF00"
+			if (value < 9) return "cyan"
+			return "#00FF00"
+
+			let color = "#"
+
+			let colorValue = 255 - (32 * value)
+			if (colorValue < 0) colorValue = 0
+			color += colorValue.toString(16)
+			if (colorValue < 16) color += "0"
+
+			colorValue = 32 * value - 255
+			if (colorValue < 0) colorValue = 0
+			color += colorValue.toString(16)
+			if (colorValue < 16) color += "0"
+
+			colorValue = 255 - Math.abs(255 - (32 * value))
+			color += colorValue.toString(16)
+			if (colorValue < 16) color += "0"
+
+			console.log(value, color)
+
+			return color
+		}
+
+		function numbersToDots(value) {
+			return 6 - Math.abs(value - 7)
+		}
+
+		initializePage()
+
+		//	<input id="wood" value="0" onclick="this.setSelectionRange(0, this.value.length)">
+
+	</script>
 	<br><br> This page is ugly and probably doesn't work too well on mobile. I'm okay with that. <br><br>
 </body>
+
 </html>
