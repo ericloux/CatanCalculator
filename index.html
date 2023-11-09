@@ -265,14 +265,14 @@
 		}
 
 		function mark_unusable(i, j) {
-			if (tileValuesColorState[i][j] != null) {
+			if (i < 11 && j < 17 && tileValuesColorState[i][j] != null) {
 				drawLabel(i, j, tileValues[i][j], "#000")
 				tileValuesColorState[i][j][1] = -1
 			}
 		}
 
 		function mark_usable(i, j) {
-			if (tileValuesColorState[i][j] != null) {
+			if (i < 11 && j < 17 && tileValuesColorState[i][j] != null) {
 				drawLabel(i, j, tileValues[i][j], tileValuesColorState[i][j][0])
 				tileValuesColorState[i][j][1] = 0
 			}
